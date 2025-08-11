@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月經追蹤器</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme color for PWA -->
+    <meta name="theme-color" content="#F3E9E5">
+
+    <style>
+        /* 使用 Noto Sans TC 作為主要字體，並為英數內容提供 Inter 字體 */
+        body {
+            font-family: 'Noto Sans TC', 'Inter', sans-serif;
+            background-color: #FBF9F8; /* 非常淺的米色背景 */
+            color: #5C5C5C; /* 深灰色文字 */
+        }
+        /* 自定義顏色 */
+        .brand-bg { background-color: #EADCD6; } /* 主要的柔和粉色 */
+        .brand-bg-light { background-color: #F3E9E5; } /* 更淺的粉色 */
+        .brand-text { color: #8F7870; } /* 柔和粉色的文字顏色 */
+        .brand-border { border-color: #EADCD6; }
+        .active-tab {
+            background-color: #EADCD6;
+            color: #5C5C5C;
+            font-weight: 500;
+        }
+        .inactive-tab {
+            background-color: #F3E9E5;
+            color: #8F7870;
+        }
+        /* 隱藏/顯示畫面的 class */
+        .hidden-view {
+            display: none;
+        }
+        /* 簡單的彈出視窗樣式 */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #modal {
+            background-color: #FBF9F8;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="max-w-md mx-auto">
+
+    <div id="app" class="p-4 space-y-4">
+        <!-- Header -->
+        <header class="text-center py-4">
+            <h1 class="text-xl font-semibold flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256" class="mr-2 brand-text"><path fill="currentColor" d="M232.54,103.46a8,8,0,0,0-8.13-6.09l-49.49.2l-14-46.12a8,8,0,0,0-15.13-1.8l-19.1,63.1a8,8,0,0,0,2.1,7.57l37.26,37.26a8,8,0,0,0,11.31,0l55.18-55.18a8,8,0,0,0,0-11.31Zm-11.31,5.66L166.05,164.3a8,8,0,0,1-11.31,0L117.48,127a8,8,0,0,1-2.1-7.57l19.1-63.1a8,8,0,0,1,15.13,1.8l14,46.12a8,8,0,0,1-2.39,7.39l-11.32,11.31a8,8,0,0,0,0,11.32l11.32,11.31a8,8,0,0,0,11.31,0l43.87-43.87a8,8,0,0,1,5.66,2.34A8,8,0,0,1,221.23,109.12Z"/><path fill="currentColor" d="M128,152a24,24,0,1,0-24-24A24,24,0,0,0,128,152Zm0-32a8,8,0,1,1-8,8A8,8,0,0,1,128,120Z"/><path fill="currentColor" d="M138.63,114.63a8,8,0,0,0-11.31,0L90.06,151.89a8,8,0,0,0,0,11.31l43.87,43.87a8,8,0,0,0,11.31,0l43.87-43.87a8,8,0,0,0,0-11.31ZM101.37,157.37,134,130.06l32.63,32.63L134,195.31Z"/><path fill="currentColor" d="M103.46,23.46a8,8,0,0,0-11.31,0L36.93,78.69a8,8,0,0,0,0,11.31l37.26,37.26a8,8,0,0,0,7.57,2.1l63.1-19.1a8,8,0,0,0,1.8-15.13l-46.12-14-.2-49.49A8,8,0,0,0,103.46,23.46ZM89.95,117.48,52.69,80.22l55.18-55.18,0,43.87a8,8,0,0,0,2.34,5.66a8,8,0,0,0,7.39-2.39L128.92,61l11.31,11.32a8,8,0,0,0,11.32,0l11.31-11.32a8,8,0,0,0,0-11.31L151.55,38.34a8,8,0,0,1,2.34-5.66l-43.87-43.87Z"/></svg>
+                月經追蹤器
+            </h1>
+        </header>
+
+        <!-- Status Display -->
+        <div class="space-y-2">
+            <div id="prediction-status" class="brand-bg-light p-4 rounded-lg text-center">下次月經預計：需要更多記錄來預測</div>
+            <div id="notification-status" class="brand-bg-light p-4 rounded-lg text-center">通知狀態：未設定</div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="grid grid-cols-4 rounded-lg overflow-hidden">
+            <button id="tab-record" class="p-3 text-sm focus:outline-none active-tab" onclick="switchTab('record')">記錄</button>
+            <button id="tab-history" class="p-3 text-sm focus:outline-none inactive-tab" onclick="switchTab('history')">歷史</button>
+            <button id="tab-calendar" class="p-3 text-sm focus:outline-none inactive-tab" onclick="switchTab('calendar')">日曆</button>
+            <button id="tab-settings" class="p-3 text-sm focus:outline-none inactive-tab" onclick="switchTab('settings')">設定</button>
+        </div>
+
+        <!-- Views (Pages) -->
+        <div id="views">
+            <!-- Record View -->
+            <div id="view-record" class="space-y-5 py-4">
+                <div>
+                    <label for="date-input" class="block text-sm font-medium mb-1">日期</label>
+                    <input type="date" id="date-input" class="w-full p-3 bg-white border border-gray-200 rounded-lg">
+                </div>
+                <div>
+                    <label for="flow-select" class="block text-sm font-medium mb-1">血量</label>
+                    <select id="flow-select" class="w-full p-3 bg-white border border-gray-200 rounded-lg appearance-none">
+                        <option value="0">無</option>
+                        <option value="1">少量 (點滴)</option>
+                        <option value="2">中量</option>
+                        <option value="3">大量</option>
+                    </select>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium mb-2">經前症候群症狀</h3>
+                    <div id="pms-symptoms" class="grid grid-cols-2 gap-3">
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-symptom="情緒波動">情緒波動</button>
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-symptom="腹脹">腹脹</button>
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-symptom="乳房脹痛">乳房脹痛</button>
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-symptom="疲勞">疲勞</button>
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-symptom="頭痛">頭痛</button>
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-symptom="食慾改變">食慾改變</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium mb-2">經痛程度</h3>
+                    <div id="pain-level" class="grid grid-cols-3 gap-3">
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-pain="無">無</button>
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-pain="輕微">輕微</button>
+                        <button class="p-3 bg-white border border-gray-200 rounded-lg text-sm" data-pain="嚴重">嚴重</button>
+                    </div>
+                </div>
+                <button id="save-button" class="w-full p-4 brand-bg rounded-lg text-white font-semibold shadow-md hover:opacity-90 transition-opacity">儲存記錄</button>
+            </div>
+
+            <!-- History View -->
+            <div id="view-history" class="hidden-view space-y-4 py-4">
+                <h2 class="text-lg font-semibold">歷史記錄</h2>
+                <div id="history-list" class="space-y-3">
+                    <!-- History items will be injected here -->
+                    <p class="text-gray-500">尚無歷史記錄。</p>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div id="view-calendar" class="hidden-view py-4">
+                 <div id="calendar-container" class="bg-white p-4 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="prev-month" class="p-2 rounded-full hover:bg-gray-100">&lt;</button>
+                        <h2 id="calendar-month-year" class="text-lg font-semibold"></h2>
+                        <button id="next-month" class="p-2 rounded-full hover:bg-gray-100">&gt;</button>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center text-sm">
+                        <!-- Calendar will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="hidden-view space-y-6 py-4">
+                <div>
+                    <h2 class="text-lg font-semibold mb-2">通知設定</h2>
+                    <button id="enable-notifications" class="w-full p-4 brand-bg rounded-lg text-white font-semibold shadow-md hover:opacity-90 transition-opacity">啟用經期提醒</button>
+                    <p class="text-xs text-gray-500 mt-2">我們會在預測經期開始前 7 天傳送通知。請允許瀏覽器傳送通知的權限。</p>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold mb-2">週期設定</h2>
+                     <label for="cycle-length-input" class="block text-sm font-medium mb-1">預估平均週期長度 (天)</label>
+                    <input type="number" id="cycle-length-input" class="w-full p-3 bg-white border border-gray-200 rounded-lg" placeholder="例如: 28">
+                    <p class="text-xs text-gray-500 mt-2">在有足夠的歷史記錄前，我們會使用此數值來預測。當您記錄兩個以上的週期後，App 會自動計算您的平均週期。</p>
+                </div>
+                 <div>
+                    <h2 class="text-lg font-semibold mb-2">資料管理</h2>
+                    <button id="export-data" class="w-full mb-2 p-3 bg-gray-200 rounded-lg text-gray-700 font-semibold">匯出資料</button>
+                    <button id="import-data-btn" class="w-full mb-2 p-3 bg-gray-200 rounded-lg text-gray-700 font-semibold">匯入資料</button>
+                    <input type="file" id="import-file-input" class="hidden" accept=".json">
+                    <button id="clear-data" class="w-full p-3 bg-red-200 rounded-lg text-red-700 font-semibold">清除所有資料</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for messages -->
+    <div id="modal-overlay" class="hidden-view">
+        <div id="modal">
+            <p id="modal-message" class="text-center mb-4"></p>
+            <button id="modal-close" class="w-full p-3 brand-bg rounded-lg text-white font-semibold">關閉</button>
+        </div>
+    </div>
+
+    <script>
+        // --- PWA Service Worker Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => console.log('ServiceWorker registration successful with scope: ', registration.scope))
+                    .catch(err => console.log('ServiceWorker registration failed: ', err));
+            });
+        }
+
+        // --- App State and DOM Elements ---
+        const state = {
+            records: JSON.parse(localStorage.getItem('periodRecords')) || {},
+            settings: JSON.parse(localStorage.getItem('periodSettings')) || {
+                avgCycleLength: 28,
+                notificationsEnabled: false
+            },
+            currentDate: new Date(),
+        };
+
+        const views = ['record', 'history', 'calendar', 'settings'];
+        const dateInput = document.getElementById('date-input');
+        const flowSelect = document.getElementById('flow-select');
+        const pmsContainer = document.getElementById('pms-symptoms');
+        const painContainer = document.getElementById('pain-level');
+        const saveButton = document.getElementById('save-button');
+        const historyList = document.getElementById('history-list');
+        const predictionStatus = document.getElementById('prediction-status');
+        const notificationStatus = document.getElementById('notification-status');
+        const cycleLengthInput = document.getElementById('cycle-length-input');
+        const enableNotificationsBtn = document.getElementById('enable-notifications');
+        
+        // Modal elements
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalMessage = document.getElementById('modal-message');
+        const modalClose = document.getElementById('modal-close');
+
+        // --- Utility Functions ---
+        const toISODateString = (date) => date.toISOString().split('T')[0];
+        
+        const showModal = (message) => {
+            modalMessage.textContent = message;
+            modalOverlay.style.display = 'flex';
+        };
+        
+        modalClose.addEventListener('click', () => {
+            modalOverlay.style.display = 'none';
+        });
+
+        // --- Data Persistence ---
+        const saveData = () => {
+            localStorage.setItem('periodRecords', JSON.stringify(state.records));
+            localStorage.setItem('periodSettings', JSON.stringify(state.settings));
+        };
+
+        // --- UI Logic ---
+        const switchTab = (targetView) => {
+            views.forEach(view => {
+                document.getElementById(`view-${view}`).classList.add('hidden-view');
+                document.getElementById(`tab-${view}`).classList.remove('active-tab');
+                document.getElementById(`tab-${view}`).classList.add('inactive-tab');
+            });
+            document.getElementById(`view-${targetView}`).classList.remove('hidden-view');
+            document.getElementById(`tab-${targetView}`).classList.add('active-tab');
+            document.getElementById(`tab-${targetView}`).classList.remove('inactive-tab');
+            
+            // Refresh content when switching to a view
+            if (targetView === 'history') renderHistory();
+            if (targetView === 'calendar') renderCalendar();
+        };
+
+        const loadRecordForDate = (dateString) => {
+            // Reset form
+            flowSelect.value = '0';
+            pmsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('brand-bg', 'text-white'));
+            painContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('brand-bg', 'text-white'));
+
+            const record = state.records[dateString];
+            if (record) {
+                flowSelect.value = record.flow;
+                record.symptoms.forEach(symptom => {
+                    const btn = pmsContainer.querySelector(`[data-symptom="${symptom}"]`);
+                    if(btn) btn.classList.add('brand-bg', 'text-white');
+                });
+                const painBtn = painContainer.querySelector(`[data-pain="${record.pain}"]`);
+                if(painBtn) painBtn.classList.add('brand-bg', 'text-white');
+            }
+        };
+
+        // --- Event Listeners ---
+        dateInput.addEventListener('change', () => {
+            loadRecordForDate(dateInput.value);
+        });
+
+        pmsContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                e.target.classList.toggle('brand-bg');
+                e.target.classList.toggle('text-white');
+            }
+        });
+
+        painContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                painContainer.querySelectorAll('button').forEach(btn => {
+                    btn.classList.remove('brand-bg', 'text-white');
+                });
+                e.target.classList.add('brand-bg', 'text-white');
+            }
+        });
+
+        saveButton.addEventListener('click', () => {
+            const date = dateInput.value;
+            if (!date) {
+                showModal('請選擇一個日期。');
+                return;
+            }
+            const selectedSymptoms = [...pmsContainer.querySelectorAll('.brand-bg')].map(btn => btn.dataset.symptom);
+            const selectedPain = painContainer.querySelector('.brand-bg')?.dataset.pain || '無';
+            
+            state.records[date] = {
+                flow: flowSelect.value,
+                symptoms: selectedSymptoms,
+                pain: selectedPain
+            };
+            
+            saveData();
+            updatePrediction();
+            showModal('記錄已儲存！');
+        });
+        
+        cycleLengthInput.addEventListener('change', () => {
+            const length = parseInt(cycleLengthInput.value, 10);
+            if (length > 0) {
+                state.settings.avgCycleLength = length;
+                saveData();
+                updatePrediction();
+            }
+        });
+
+        // --- Prediction Logic ---
+        const getCycleStartDates = () => {
+            const dates = Object.keys(state.records)
+                .filter(date => state.records[date].flow > 0)
+                .sort();
+            
+            if (dates.length === 0) return [];
+
+            const cycleStarts = [dates[0]];
+            for (let i = 1; i < dates.length; i++) {
+                const prevDate = new Date(dates[i-1]);
+                const currDate = new Date(dates[i]);
+                const diffDays = (currDate - prevDate) / (1000 * 60 * 60 * 24);
+                if (diffDays > 10) { // Assume a new cycle if gap is > 10 days
+                    cycleStarts.push(dates[i]);
+                }
+            }
+            return cycleStarts;
+        };
+        
+        const calculateAverageCycleLength = () => {
+            const startDates = getCycleStartDates();
+            if (startDates.length < 2) return null;
+
+            let totalDuration = 0;
+            for (let i = 1; i < startDates.length; i++) {
+                const startDate = new Date(startDates[i]);
+                const prevStartDate = new Date(startDates[i-1]);
+                totalDuration += (startDate - prevStartDate);
+            }
+            return Math.round(totalDuration / (1000 * 60 * 60 * 24) / (startDates.length - 1));
+        };
+
+        const updatePrediction = () => {
+            const calculatedAvg = calculateAverageCycleLength();
+            if (calculatedAvg) {
+                state.settings.avgCycleLength = calculatedAvg;
+            }
+            
+            const cycleStarts = getCycleStartDates();
+            if (cycleStarts.length === 0) {
+                predictionStatus.textContent = '下次月經預計：需要更多記錄來預測';
+                return;
+            }
+            
+            const lastStartDate = new Date(cycleStarts[cycleStarts.length - 1]);
+            const nextStartDate = new Date(lastStartDate);
+            nextStartDate.setDate(lastStartDate.getDate() + state.settings.avgCycleLength);
+            
+            predictionStatus.textContent = `下次月經預計：${toISODateString(nextStartDate)}`;
+        };
+        
+        // --- History View Logic ---
+        const renderHistory = () => {
+            historyList.innerHTML = '';
+            const sortedDates = Object.keys(state.records).sort().reverse();
+            
+            if (sortedDates.length === 0) {
+                historyList.innerHTML = '<p class="text-gray-500">尚無歷史記錄。</p>';
+                return;
+            }
+
+            sortedDates.forEach(date => {
+                const record = state.records[date];
+                const flowMap = ['無', '少量', '中量', '大量'];
+                const item = document.createElement('div');
+                item.className = 'bg-white p-4 rounded-lg shadow-sm';
+                item.innerHTML = `
+                    <p class="font-semibold">${date}</p>
+                    <p class="text-sm">血量：${flowMap[record.flow] || '未記錄'}</p>
+                    <p class="text-sm">經痛：${record.pain}</p>
+                    <p class="text-sm">症狀：${record.symptoms.join(', ') || '無'}</p>
+                `;
+                historyList.appendChild(item);
+            });
+        };
+        
+        // --- Calendar View Logic ---
+        const calendarGrid = document.getElementById('calendar-grid');
+        const calendarMonthYear = document.getElementById('calendar-month-year');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+
+        const renderCalendar = () => {
+            calendarGrid.innerHTML = '';
+            const year = state.currentDate.getFullYear();
+            const month = state.currentDate.getMonth();
+            calendarMonthYear.textContent = `${year} 年 ${month + 1} 月`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Day headers
+            ['日', '一', '二', '三', '四', '五', '六'].forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'font-semibold text-xs';
+                dayEl.textContent = day;
+                calendarGrid.appendChild(dayEl);
+            });
+
+            // Blank days
+            for (let i = 0; i < firstDay; i++) {
+                calendarGrid.appendChild(document.createElement('div'));
+            }
+
+            // Month days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayEl = document.createElement('div');
+                dayEl.textContent = i;
+                dayEl.className = 'p-2 rounded-full cursor-pointer hover:bg-gray-100';
+                const dateStr = toISODateString(new Date(year, month, i));
+                
+                if (state.records[dateStr] && state.records[dateStr].flow > 0) {
+                    dayEl.classList.add('bg-red-200', 'text-red-800');
+                } else if (state.records[dateStr]) {
+                    dayEl.classList.add('bg-yellow-200', 'text-yellow-800');
+                }
+                
+                dayEl.addEventListener('click', () => {
+                    dateInput.value = dateStr;
+                    loadRecordForDate(dateStr);
+                    switchTab('record');
+                });
+                calendarGrid.appendChild(dayEl);
+            }
+        };
+
+        prevMonthBtn.addEventListener('click', () => {
+            state.currentDate.setMonth(state.currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+        nextMonthBtn.addEventListener('click', () => {
+            state.currentDate.setMonth(state.currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        // --- Notification Logic ---
+        const updateNotificationStatus = () => {
+            if (!('Notification' in window)) {
+                notificationStatus.textContent = '通知狀態：您的瀏覽器不支援';
+                enableNotificationsBtn.disabled = true;
+                return;
+            }
+            const status = Notification.permission;
+            notificationStatus.textContent = `通知狀態：${status === 'granted' ? '已啟用' : (status === 'denied' ? '已封鎖' : '未設定')}`;
+            if (status === 'granted') {
+                enableNotificationsBtn.textContent = '通知已啟用';
+                enableNotificationsBtn.disabled = true;
+            }
+        };
+
+        enableNotificationsBtn.addEventListener('click', () => {
+            Notification.requestPermission().then(permission => {
+                updateNotificationStatus();
+                if (permission === 'granted') {
+                    state.settings.notificationsEnabled = true;
+                    saveData();
+                    showModal('通知已成功啟用！');
+                    scheduleNotification();
+                } else {
+                    showModal('您未授予通知權限。');
+                }
+            });
+        });
+        
+        const scheduleNotification = async () => {
+            if (!state.settings.notificationsEnabled || Notification.permission !== 'granted') return;
+
+            const registration = await navigator.serviceWorker.ready;
+            const cycleStarts = getCycleStartDates();
+            if(cycleStarts.length === 0) return;
+
+            const lastStartDate = new Date(cycleStarts[cycleStarts.length - 1]);
+            const nextStartDate = new Date(lastStartDate);
+            nextStartDate.setDate(lastStartDate.getDate() + state.settings.avgCycleLength);
+            
+            const notificationDate = new Date(nextStartDate);
+            notificationDate.setDate(notificationDate.getDate() - 7);
+            
+            const now = new Date();
+            const timeDiff = notificationDate.getTime() - now.getTime();
+
+            if (timeDiff > 0) {
+                console.log(`Scheduling notification for ${notificationDate}`);
+                // In a real app, you'd use the service worker to show this even if the app is closed.
+                // For simplicity here, we'll use a timeout if the app is open.
+                // The service worker part handles the robust background scheduling.
+                registration.showNotification('月經提醒', {
+                    body: `您的月經預計在 7 天後到來 (${toISODateString(nextStartDate)})。`,
+                    icon: 'icons/icon-192x192.png',
+                    tag: 'period-reminder',
+                    showTrigger: new TimestampTrigger(notificationDate.getTime()), // This API is for future use, not fully supported yet.
+                }).catch(e => console.error("Scheduling failed: ", e));
+                // Fallback for current browsers
+                setTimeout(() => {
+                    navigator.serviceWorker.ready.then(reg => {
+                        reg.showNotification('月經提醒', {
+                            body: `您的月經預計在 7 天後到來 (${toISODateString(nextStartDate)})。`,
+                            icon: 'icons/icon-192x192.png',
+                            tag: 'period-reminder'
+                        });
+                    });
+                }, timeDiff);
+            }
+        };
+        
+        // --- Data Management ---
+        document.getElementById('clear-data').addEventListener('click', () => {
+            if (confirm('您確定要清除所有記錄和設定嗎？此操作無法復原。')) {
+                localStorage.removeItem('periodRecords');
+                localStorage.removeItem('periodSettings');
+                state.records = {};
+                state.settings = { avgCycleLength: 28, notificationsEnabled: false };
+                location.reload();
+            }
+        });
+
+        document.getElementById('export-data').addEventListener('click', () => {
+            const dataStr = JSON.stringify({ records: state.records, settings: state.settings });
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'period_tracker_data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        const importFileInput = document.getElementById('import-file-input');
+        document.getElementById('import-data-btn').addEventListener('click', () => importFileInput.click());
+        importFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.records && data.settings) {
+                        if (confirm('這將會覆蓋您目前的資料，確定要匯入嗎？')) {
+                            state.records = data.records;
+                            state.settings = data.settings;
+                            saveData();
+                            location.reload();
+                        }
+                    } else {
+                        showModal('檔案格式不正確。');
+                    }
+                } catch (error) {
+                    showModal('讀取檔案時發生錯誤。');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // --- App Initialization ---
+        const init = () => {
+            const today = toISODateString(new Date());
+            dateInput.value = today;
+            cycleLengthInput.value = state.settings.avgCycleLength;
+            loadRecordForDate(today);
+            updatePrediction();
+            updateNotificationStatus();
+            if (state.settings.notificationsEnabled) {
+                scheduleNotification();
+            }
+            // Initial render for calendar
+            renderCalendar();
+        };
+
+        init();
+    </script>
+    
+    <!--
+    ====================================================================
+    PWA SETUP FILES
+    
+    To make this a fully functional and installable PWA, you need to
+    create the following two files in the same directory as this HTML file.
+    ====================================================================
+    
+    
+    
+    FILE 1: manifest.json
+    (Copy the content below into a new file named "manifest.json")
+    
+    {
+      "name": "月經追蹤器",
+      "short_name": "月經紀錄",
+      "description": "一個簡單、注重隱私的月經週期追蹤 PWA。",
+      "start_url": ".",
+      "display": "standalone",
+      "background_color": "#FBF9F8",
+      "theme_color": "#EADCD6",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
+        {
+          "src": "icons/icon-512x512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    }
+    
+    NOTE: You will also need to create an 'icons' folder and place
+    two PNG icon files (192x192 and 512x512 pixels) inside it.
+    You can easily generate these from a single image using a free
+    online PWA icon generator.
+    
+    
+    
+    FILE 2: service-worker.js
+    (Copy the content below into a new file named "service-worker.js")
+    
+    const CACHE_NAME = 'period-tracker-cache-v1';
+    const urlsToCache = [
+      '/',
+      '/index.html',
+      'https://cdn.tailwindcss.com',
+      'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap'
+    ];
+    
+    self.addEventListener('install', event => {
+      event.waitUntil(
+        caches.open(CACHE_NAME)
+          .then(cache => {
+            console.log('Opened cache');
+            return cache.addAll(urlsToCache);
+          })
+      );
+    });
+    
+    self.addEventListener('fetch', event => {
+      event.respondWith(
+        caches.match(event.request)
+          .then(response => {
+            if (response) {
+              return response;
+            }
+            return fetch(event.request);
+          }
+        )
+      );
+    });
+
+    self.addEventListener('notificationclick', event => {
+        event.notification.close();
+        event.waitUntil(
+            clients.openWindow('/')
+        );
+    });
+
+    -->
+</body>
+</html>

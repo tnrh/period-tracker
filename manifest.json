@@ -1,0 +1,21 @@
+{
+      "name": "月經追蹤器",
+      "short_name": "月經紀錄",
+      "description": "一個簡單、注重隱私的月經週期追蹤 PWA。",
+      "start_url": ".",
+      "display": "standalone",
+      "background_color": "#FBF9F8",
+      "theme_color": "#EADCD6",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
+        {
+          "src": "icons/icon-512x512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    }
